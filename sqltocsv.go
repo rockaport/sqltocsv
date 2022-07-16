@@ -48,6 +48,7 @@ type Converter struct {
 	Headers      []string // Column headers to use (default is rows.Columns())
 	WriteHeaders bool     // Flag to output headers in your CSV (default is true)
 	TimeFormat   string   // Format string for any time.Time values (default is time's default)
+	UtcTime      bool
 	FloatFormat  string   // Format string for any float64 and float32 values (default is %v)
 	Delimiter    rune     // Delimiter to use in your CSV (default is comma)
 
@@ -158,7 +159,11 @@ func (c Converter) Write(writer io.Writer) error {
 
 			timeValue, ok := value.(time.Time)
 			if ok && c.TimeFormat != "" {
-				value = timeValue.Format(c.TimeFormat)
+				if c.UtcTime {
+					value = timeValue.UTC().Format(c.TimeFormat)
+				} else {
+					value = timeValue.Format(c.TimeFormat)
+				}
 			}
 
 			if value == nil {
